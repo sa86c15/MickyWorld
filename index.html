@@ -7,7 +7,11 @@
 </head>
 <body>
     <h1>選擇員工</h1>
-    <select id="employeeDropdown"></select>
+    <select id="employeeDropdown">
+        <option value="">請選擇員工</option>
+    </select>
+    
+    <h2>訂單列表</h2>
     <ul id="orderList"></ul>
 
     <script>
@@ -16,7 +20,10 @@
 
         async function fetchEmployees() {
             const res = await fetch(`${SUPABASE_URL}/rest/v1/employees`, {
-                headers: { "apikey": SUPABASE_KEY }
+                headers: { 
+                    "apikey": SUPABASE_KEY,
+                    "Authorization": `Bearer ${SUPABASE_KEY}`
+                }
             });
             const employees = await res.json();
             const dropdown = document.getElementById("employeeDropdown");
@@ -28,16 +35,34 @@
                 dropdown.appendChild(option);
             });
 
-            dropdown.addEventListener("change", () => fetchOrders(dropdown.value));
+            dropdown.addEventListener("change", () => {
+                const selectedId = dropdown.value;
+                if (selectedId) {
+                    fetchOrders(selectedId);
+                } else {
+                    document.getElementById("orderList").innerHTML = "";
+                }
+            });
         }
 
         async function fetchOrders(employeeId) {
             const res = await fetch(`${SUPABASE_URL}/rest/v1/orders?employee_id=eq.${employeeId}`, {
-                headers: { "apikey": SUPABASE_KEY }
+                headers: { 
+                    "apikey": SUPABASE_KEY,
+                    "Authorization": `Bearer ${SUPABASE_KEY}`
+                }
             });
             const orders = await res.json();
             const orderList = document.getElementById("orderList");
-            orderList.innerHTML = orders.map(o => `<li>訂單 ID: ${o.order_id}</li>`).join("");
+            orderList.innerHTML = orders.map(o => `
+                <li>
+                    <strong>訂單標題:</strong> ${o.title} <br>
+                    <strong>日期:</strong> ${o.date} <br>
+                    <strong>數量:</strong> ${o.vCount} <br>
+                    <strong>描述1:</strong> ${o.desc1} <br>
+                    <strong>描述2:</strong> ${o.desc2} <br>
+                </li>
+            `).join("");
         }
 
         fetchEmployees();
