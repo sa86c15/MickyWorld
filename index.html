@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>員工訂單系統</title>
+</head>
+<body>
+    <h1>選擇員工</h1>
+    <select id="employeeDropdown"></select>
+    <ul id="orderList"></ul>
+
+    <script>
+        const SUPABASE_URL = "https://tjbebqsyknnnxwpgpvjf.supabase.co";
+        const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRqYmVicXN5a25ubnh3cGdwdmpmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzg2MzM4ODksImV4cCI6MjA1NDIwOTg4OX0.Onw16UMEPfgpSfgjV46Z6tsb1zilVFjLh8sHX2nuwx4";
+
+        async function fetchEmployees() {
+            const res = await fetch(`${SUPABASE_URL}/rest/v1/employees`, {
+                headers: { "apikey": SUPABASE_KEY }
+            });
+            const employees = await res.json();
+            const dropdown = document.getElementById("employeeDropdown");
+
+            employees.forEach(emp => {
+                const option = document.createElement("option");
+                option.value = emp.id;
+                option.textContent = emp.name;
+                dropdown.appendChild(option);
+            });
+
+            dropdown.addEventListener("change", () => fetchOrders(dropdown.value));
+        }
+
+        async function fetchOrders(employeeId) {
+            const res = await fetch(`${SUPABASE_URL}/rest/v1/orders?employee_id=eq.${employeeId}`, {
+                headers: { "apikey": SUPABASE_KEY }
+            });
+            const orders = await res.json();
+            const orderList = document.getElementById("orderList");
+            orderList.innerHTML = orders.map(o => `<li>訂單 ID: ${o.order_id}</li>`).join("");
+        }
+
+        fetchEmployees();
+    </script>
+</body>
+</html>
