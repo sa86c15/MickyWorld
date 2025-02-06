@@ -197,6 +197,22 @@
             });
         }
 
+        // 轉換日期到台灣時區 (Asia/Taipei)
+        function formatDateToTaiwanTime(dateString) {
+            const date = new Date(dateString);  // 假設 dateString 是從 API 獲取的 ISO 日期字串
+            const options = {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: false,
+                timeZone: 'Asia/Taipei'  // 設定為台灣時區
+            };
+            return date.toLocaleString('zh-TW', options);  // 'zh-TW' 是台灣的地區設置，日期格式符合我們的需求
+        }
+        
         // 載入訂單資料
         async function fetchOrders() {
             const res = await fetch(`${SUPABASE_URL}/rest/v1/orders`, {
@@ -211,9 +227,10 @@
 
             orders.forEach(order => {
                 const row = orderList.insertRow();
+                const formattedDate = formatDateToTaiwanTime(order.date);  // 格式化日期到台灣時區
                 row.innerHTML = `
                     <td>${order.title}</td>
-                    <td>${order.date}</td>
+                    <td>${formattedDate}</td>
                     <td>${order.vCount}</td>
                     <td>${order.employee_id}</td>
                     <td>${order.desc1}</td>
