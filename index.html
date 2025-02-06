@@ -6,18 +6,35 @@
     <title>員工訂單系統</title>
 </head>
 <body>
-    <h1>選擇員工</h1>
+    <h1>員工管理</h1>
+    <h2>新增員工</h2>
+    <input type="text" id="newEmployeeName" placeholder="輸入員工姓名">
+    <button onclick="addEmployee()">新增員工</button>
+
+    <h2>選擇員工</h2>
     <select id="employeeDropdown">
         <option value="">請選擇員工</option>
     </select>
     
-    <h2>訂單列表</h2>
+    <h2>新增訂單</h2>
+    <input type="text" id="orderTitle" placeholder="訂單標題">
+    <input type="date" id="orderDate">
+    <input type="number" id="orderCount" placeholder="數量">
+    <input type="text" id="orderDesc1" placeholder="描述1">
+    <input type="text" id="orderDesc2" placeholder="描述2">
+    <button onclick="addOrder()">新增訂單</button>
+
+    <h2>員工訂單</h2>
     <ul id="orderList"></ul>
+
+    <h2>訂單總表</h2>
+    <ul id="allOrdersList"></ul>
 
     <script>
         const SUPABASE_URL = "https://tjbebqsyknnnxwpgpvjf.supabase.co";
-        const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRqYmVicXN5a25ubnh3cGdwdmpmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzg2MzM4ODksImV4cCI6MjA1NDIwOTg4OX0.Onw16UMEPfgpSfgjV46Z6tsb1zilVFjLh8sHX2nuwx4";
+        const SUPABASE_KEY = const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRqYmVicXN5a25ubnh3cGdwdmpmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzg2MzM4ODksImV4cCI6MjA1NDIwOTg4OX0.Onw16UMEPfgpSfgjV46Z6tsb1zilVFjLh8sHX2nuwx4";
 
+        // 取得員工列表
         async function fetchEmployees() {
             const res = await fetch(`${SUPABASE_URL}/rest/v1/employees`, {
                 headers: { 
@@ -26,7 +43,10 @@
                 }
             });
             const employees = await res.json();
+            console.log("員工列表:", employees);
+
             const dropdown = document.getElementById("employeeDropdown");
+            dropdown.innerHTML = `<option value="">請選擇員工</option>`; // 清空並重新加載
 
             employees.forEach(emp => {
                 const option = document.createElement("option");
@@ -45,6 +65,7 @@
             });
         }
 
+        // 取得員工的訂單
         async function fetchOrders(employeeId) {
             const res = await fetch(`${SUPABASE_URL}/rest/v1/orders?employee_id=eq.${employeeId}`, {
                 headers: { 
@@ -53,6 +74,8 @@
                 }
             });
             const orders = await res.json();
+            console.log("員工的訂單:", orders);
+
             const orderList = document.getElementById("orderList");
             orderList.innerHTML = orders.map(o => `
                 <li>
@@ -65,7 +88,95 @@
             `).join("");
         }
 
+        // 取得所有訂單（訂單總表）
+        async function fetchAllOrders() {
+            const res = await fetch(`${SUPABASE_URL}/rest/v1/orders`, {
+                headers: { 
+                    "apikey": SUPABASE_KEY,
+                    "Authorization": `Bearer ${SUPABASE_KEY}`
+                }
+            });
+            const orders = await res.json();
+            console.log("所有訂單:", orders);
+
+            const allOrdersList = document.getElementById("allOrdersList");
+            allOrdersList.innerHTML = orders.map(o => `
+                <li>
+                    <strong>員工 ID:</strong> ${o.employee_id} <br>
+                    <strong>訂單標題:</strong> ${o.title} <br>
+                    <strong>日期:</strong> ${o.date} <br>
+                    <strong>數量:</strong> ${o.vCount} <br>
+                    <strong>描述1:</strong> ${o.desc1} <br>
+                    <strong>描述2:</strong> ${o.desc2} <br>
+                </li>
+            `).join("");
+        }
+
+        // 新增員工
+        async function addEmployee() {
+            const name = document.getElementById("newEmployeeName").value;
+            if (!name) return alert("請輸入員工姓名");
+
+            const res = await fetch(`${SUPABASE_URL}/rest/v1/employees`, {
+                method: "POST",
+                headers: {
+                    "apikey": SUPABASE_KEY,
+                    "Authorization": `Bearer ${SUPABASE_KEY}`,
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ name })
+            });
+
+            if (res.ok) {
+                alert("員工新增成功");
+                fetchEmployees();
+            } else {
+                alert("新增失敗");
+            }
+        }
+
+        // 新增訂單
+        async function addOrder() {
+            const employeeId = document.getElementById("employeeDropdown").value;
+            if (!employeeId) return alert("請選擇員工");
+
+            const title = document.getElementById("orderTitle").value;
+            const date = document.getElementById("orderDate").value;
+            const vCount = document.getElementById("orderCount").value;
+            const desc1 = document.getElementById("orderDesc1").value;
+            const desc2 = document.getElementById("orderDesc2").value;
+
+            if (!title || !date || !vCount) return alert("請輸入完整訂單資料");
+
+            const res = await fetch(`${SUPABASE_URL}/rest/v1/orders`, {
+                method: "POST",
+                headers: {
+                    "apikey": SUPABASE_KEY,
+                    "Authorization": `Bearer ${SUPABASE_KEY}`,
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    employee_id: employeeId,
+                    title,
+                    date,
+                    vCount: parseInt(vCount),
+                    desc1,
+                    desc2
+                })
+            });
+
+            if (res.ok) {
+                alert("訂單新增成功");
+                fetchOrders(employeeId);
+                fetchAllOrders(); // 重新加載訂單總表
+            } else {
+                alert("訂單新增失敗");
+            }
+        }
+
+        // 初始化載入
         fetchEmployees();
+        fetchAllOrders(); // 載入訂單總表
     </script>
 </body>
 </html>
