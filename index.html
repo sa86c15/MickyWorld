@@ -5,7 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>員工訂單系統</title>
     <style>
-        /* 你的樣式碼保持不變 */
+        .tabcontent {
+            display: none;
+        }
+        .tabcontent.active {
+            display: block;
+        }
+        /* 可依需求調整樣式 */
     </style>
 </head>
 <body>
@@ -15,8 +21,8 @@
         <button onclick="openTab('orders')">訂單</button>
     </div>
 
-    <!-- 員工清單頁面 -->
-    <div id="employees" class="tabcontent">
+    <!-- 員工頁面內容 -->
+    <div id="employees" class="tabcontent active">
         <h1>員工清單</h1>
         <table id="employeeList">
             <thead>
@@ -34,7 +40,7 @@
         </form>
     </div>
 
-    <!-- 訂單清單頁面 -->
+    <!-- 訂單頁面內容 -->
     <div id="orders" class="tabcontent">
         <h1>訂單清單</h1>
         <table id="orderList">
