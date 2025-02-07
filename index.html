@@ -5,103 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>員工訂單系統</title>
     <style>
-        /* 基本樣式 */
-        body {
-            font-family: Arial, sans-serif;
-            padding: 10px;
-            margin: 0;
-        }
-
-        .tab {
-            display: flex;
-            justify-content: space-around;
-            margin-bottom: 20px;
-        }
-
-        .tab button {
-            padding: 10px 20px;
-            cursor: pointer;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            font-size: 16px;
-        }
-
-        .tab button:hover {
-            background-color: #45a049;
-        }
-
         .tabcontent {
             display: none;
         }
-
         .tabcontent.active {
             display: block;
         }
-
-        /* 响應式設計，讓頁面在手機上更適應 */
-        @media (max-width: 600px) {
-            .tab button {
-                width: 100%;
-                margin-bottom: 10px;
-            }
-
-            table {
-                width: 100%;
-                font-size: 14px;
-                border-collapse: collapse;
-            }
-
-            th, td {
-                padding: 8px;
-                text-align: left;
-                border: 1px solid #ddd;
-            }
-
-            input[type="text"],
-            input[type="date"],
-            input[type="number"],
-            select {
-                width: 100%;
-                padding: 10px;
-                margin: 10px 0;
-                border: 1px solid #ccc;
-                border-radius: 5px;
-            }
-
-            form {
-                margin-top: 20px;
-            }
-        }
-
-        /* 桌面版樣式 */
-        table {
-            width: 80%;
-            margin: 20px auto;
-            font-size: 16px;
-            border-collapse: collapse;
-        }
-
-        th, td {
-            padding: 10px;
-            text-align: left;
-            border: 1px solid #ddd;
-        }
-
-        input[type="text"],
-        input[type="date"],
-        input[type="number"],
-        select {
-            padding: 10px;
-            margin: 10px 0;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-        }
-
-        form {
-            margin-top: 20px;
-        }
+        /* 可依需求調整樣式 */
     </style>
 </head>
 <body>
@@ -197,22 +107,6 @@
             });
         }
 
-        // 轉換日期到台灣時區 (Asia/Taipei)
-        function formatDateToTaiwanTime(dateString) {
-            const date = new Date(dateString);  // 假設 dateString 是從 API 獲取的 ISO 日期字串
-            const options = {
-                year: 'numeric',
-                month: '2-digit',
-                day: '2-digit',
-                hour: '2-digit',
-                minute: '2-digit',
-                second: '2-digit',
-                hour12: false,
-                timeZone: 'Asia/Taipei'  // 設定為台灣時區
-            };
-            return date.toLocaleString('zh-TW', options);  // 'zh-TW' 是台灣的地區設置，日期格式符合我們的需求
-        }
-        
         // 載入訂單資料
         async function fetchOrders() {
             const res = await fetch(`${SUPABASE_URL}/rest/v1/orders`, {
@@ -227,14 +121,11 @@
 
             orders.forEach(order => {
                 const row = orderList.insertRow();
-                const formattedDate = formatDateToTaiwanTime(order.date);  // 格式化日期到台灣時區
                 row.innerHTML = `
                     <td>${order.title}</td>
-                    <td>${formattedDate}</td>
-                    <td>${order.vCount}</td>
+                    <td>${order.date}</td>
+                    <td>${order.weight}</td>
                     <td>${order.employee_id}</td>
-                    <td>${order.desc1}</td>
-                    <td>${order.desc2}</td>
                 `;
             });
         }
