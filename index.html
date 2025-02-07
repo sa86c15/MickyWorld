@@ -4,135 +4,168 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>員工訂單系統</title>
-    <style>
-        .tabcontent {
-            display: none;
-        }
-        .tabcontent.active {
-            display: block;
-        }
-        /* 可依需求調整樣式 */
-    </style>
 </head>
 <body>
-    <!-- Tab 頁面 -->
-    <div class="tab">
-        <button onclick="openTab('employees')">員工</button>
-        <button onclick="openTab('orders')">訂單</button>
-    </div>
+    <h1>員工管理</h1>
+    <h2>新增員工</h2>
+    <input type="text" id="newEmployeeName" placeholder="輸入員工姓名">
+    <button onclick="addEmployee()">新增員工</button>
 
-    <!-- 員工頁面內容 -->
-    <div id="employees" class="tabcontent active">
-        <h1>員工清單</h1>
-        <table id="employeeList">
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>名稱</th>
-                </tr>
-            </thead>
-            <tbody></tbody>
-        </table>
-        <h2>新增員工</h2>
-        <form id="employeeForm">
-            <input type="text" id="employeeName" placeholder="員工名稱" required>
-            <button type="submit">新增員工</button>
-        </form>
-    </div>
+    
+    <h2>新增訂單</h2>
+    <input type="text" id="orderTitle" placeholder="訂單標題">
+    <input type="date" id="orderDate">
+    <input type="number" id="orderWeight" placeholder="重量">
+    <select id="employeeDropdown">
+        <option value="">請選擇員工</option>
+    </select>
+    <button onclick="addOrder()">新增訂單</button>
 
-    <!-- 訂單頁面內容 -->
-    <div id="orders" class="tabcontent">
-        <h1>訂單清單</h1>
-        <table id="orderList">
-            <thead>
-                <tr>
-                    <th>訂單標題</th>
-                    <th>日期</th>
-                    <th>數量</th>
-                    <th>員工名稱</th>
-                    <th>描述1</th>
-                    <th>描述2</th>
-                </tr>
-            </thead>
-            <tbody></tbody>
-        </table>
-        <h2>新增訂單</h2>
-        <form id="orderForm">
-            <input type="text" id="orderTitle" placeholder="訂單標題" required>
-            <input type="date" id="orderDate" required>
-            <input type="number" id="orderCount" placeholder="數量" required>
-            <select id="employeeDropdown" required></select>
-            <input type="text" id="orderDesc1" placeholder="描述1" required>
-            <input type="text" id="orderDesc2" placeholder="描述2" required>
-            <button type="submit">新增訂單</button>
-        </form>
-    </div>
+    <h2>員工訂單</h2>
+    <ul id="orderList"></ul>
+
+    <h2>訂單總表</h2>
+    <ul id="allOrdersList"></ul>
 
     <script>
-        // Supabase 設定
-        const SUPABASE_URL = "https://tjbebqsyknnnxwpgpvjf.supabase.co"; // 請填入你的 Supabase URL
-        const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRqYmVicXN5a25ubnh3cGdwdmpmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzg2MzM4ODksImV4cCI6MjA1NDIwOTg4OX0.Onw16UMEPfgpSfgjV46Z6tsb1zilVFjLh8sHX2nuwx4"; // 請填入你的 Supabase API 金鑰
+        const SUPABASE_URL = "https://tjbebqsyknnnxwpgpvjf.supabase.co";
+        const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRqYmVicXN5a25ubnh3cGdwdmpmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzg2MzM4ODksImV4cCI6MjA1NDIwOTg4OX0.Onw16UMEPfgpSfgjV46Z6tsb1zilVFjLh8sHX2nuwx4";
 
-        // 開啟Tab頁面
-        function openTab(tabName) {
-            const tabContents = document.querySelectorAll('.tabcontent');
-            tabContents.forEach(tab => tab.classList.remove('active'));
-            document.getElementById(tabName).classList.add('active');
-        }
-
-        // 載入員工資料
+        // 取得員工列表
         async function fetchEmployees() {
             const res = await fetch(`${SUPABASE_URL}/rest/v1/employees`, {
-                headers: {
+                headers: { 
                     "apikey": SUPABASE_KEY,
                     "Authorization": `Bearer ${SUPABASE_KEY}`
                 }
             });
             const employees = await res.json();
+            console.log("員工列表:", employees);
+
             const dropdown = document.getElementById("employeeDropdown");
-            const employeeList = document.getElementById("employeeList").getElementsByTagName('tbody')[0];
-            employeeList.innerHTML = '';
+            dropdown.innerHTML = `<option value="">請選擇員工</option>`; // 清空並重新加載
 
             employees.forEach(emp => {
                 const option = document.createElement("option");
                 option.value = emp.id;
                 option.textContent = emp.name;
                 dropdown.appendChild(option);
+            });
 
-                const row = employeeList.insertRow();
-                row.innerHTML = `
-                    <td>${emp.id}</td>
-                    <td>${emp.name}</td>
-                `;
+            dropdown.addEventListener("change", () => {
+                const selectedId = dropdown.value;
+                if (selectedId) {
+                    fetchOrders(selectedId);
+                } else {
+                    document.getElementById("orderList").innerHTML = "";
+                }
             });
         }
 
-        // 載入訂單資料
-        async function fetchOrders() {
-            const res = await fetch(`${SUPABASE_URL}/rest/v1/orders`, {
-                headers: {
+        // 取得員工的訂單
+        async function fetchOrders(employeeId) {
+            const res = await fetch(`${SUPABASE_URL}/rest/v1/orders?employee_id=eq.${employeeId}`, {
+                headers: { 
                     "apikey": SUPABASE_KEY,
                     "Authorization": `Bearer ${SUPABASE_KEY}`
                 }
             });
             const orders = await res.json();
-            const orderList = document.getElementById("orderList").getElementsByTagName('tbody')[0];
-            orderList.innerHTML = '';
+            console.log("員工的訂單:", orders);
 
-            orders.forEach(order => {
-                const row = orderList.insertRow();
-                row.innerHTML = `
-                    <td>${order.title}</td>
-                    <td>${order.date}</td>
-                    <td>${order.weight}</td>
-                    <td>${order.employee_id}</td>
-                `;
-            });
+            const orderList = document.getElementById("orderList");
+            orderList.innerHTML = orders.map(o => `
+                <li>
+                    <strong>訂單標題:</strong> ${o.title} <br>
+                    <strong>日期:</strong> ${o.date} <br>
+                    <strong>重量:</strong> ${o.weight} <br>
+                </li>
+            `).join("");
         }
 
-        // 呼叫初始化函式
+        // 取得所有訂單（訂單總表）
+        async function fetchAllOrders() {
+            const res = await fetch(`${SUPABASE_URL}/rest/v1/orders`, {
+                headers: { 
+                    "apikey": SUPABASE_KEY,
+                    "Authorization": `Bearer ${SUPABASE_KEY}`
+                }
+            });
+            const orders = await res.json();
+            console.log("所有訂單:", orders);
+
+            const allOrdersList = document.getElementById("allOrdersList");
+            allOrdersList.innerHTML = orders.map(o => `
+                <li>
+                    <strong>員工 ID:</strong> ${o.employee_id} <br>
+                    <strong>訂單標題:</strong> ${o.title} <br>
+                    <strong>日期:</strong> ${o.date} <br>
+                    <strong>重量:</strong> ${o.weight} <br>
+                </li>
+            `).join("");
+        }
+
+        // 新增員工
+        async function addEmployee() {
+            const name = document.getElementById("newEmployeeName").value;
+            if (!name) return alert("請輸入員工姓名");
+
+            const res = await fetch(`${SUPABASE_URL}/rest/v1/employees`, {
+                method: "POST",
+                headers: {
+                    "apikey": SUPABASE_KEY,
+                    "Authorization": `Bearer ${SUPABASE_KEY}`,
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ name })
+            });
+
+            if (res.ok) {
+                alert("員工新增成功");
+                fetchEmployees();
+            } else {
+                alert("新增失敗");
+            }
+        }
+
+        // 新增訂單
+        async function addOrder() {
+            const employeeId = document.getElementById("employeeDropdown").value;
+            if (!employeeId) return alert("請選擇員工");
+
+            const title = document.getElementById("orderTitle").value;
+            const date = document.getElementById("orderDate").value;
+            const weight = document.getElementById("orderWeight").value;
+
+            if (!title || !date || !weight) return alert("請輸入完整訂單資料");
+
+            const res = await fetch(`${SUPABASE_URL}/rest/v1/orders`, {
+                method: "POST",
+                headers: {
+                    "apikey": SUPABASE_KEY,
+                    "Authorization": `Bearer ${SUPABASE_KEY}`,
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    employee_id: employeeId,
+                    title,
+                    date,
+                    weight: parseInt(weight)
+                })
+            });
+
+            if (res.ok) {
+                alert("訂單新增成功");
+                fetchOrders(employeeId);
+                fetchAllOrders(); // 重新加載訂單總表
+            } else {
+                alert("訂單新增失敗");
+            }
+        }
+
+        // 初始化載入
         fetchEmployees();
-        fetchOrders();
+        fetchAllOrders(); // 載入訂單總表
     </script>
 </body>
 </html>
