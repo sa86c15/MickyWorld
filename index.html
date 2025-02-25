@@ -3,151 +3,82 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>工單管理系統</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <style>
-        body { font-family: Arial, sans-serif; padding: 20px; }
-        h2 { margin-top: 20px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-        th { background-color: #f4f4f4; }
-        input, button { margin-top: 10px; padding: 8px; }
-    </style>
+    <title>員工訂單系統</title>
 </head>
-
 <body>
-    <h1>工單管理系統</h1>
-
-    <h2>員工列表</h2>
-    <table id="employeeTable">
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>姓名</th>
-            </tr>
-        </thead>
-        <tbody></tbody>
-    </table>
-    <input type="text" id="newEmployeeName" placeholder="員工姓名">
+    <h1>員工管理</h1>
+    <h2>新增員工</h2>
+    <input type="text" id="newEmployeeName" placeholder="輸入員工姓名">
     <button onclick="addEmployee()">新增員工</button>
 
-    <h2>公司列表</h2>
-    <table id="companyTable">
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>公司名稱</th>
-            </tr>
-        </thead>
-        <tbody></tbody>
-    </table>
-    <input type="text" id="newCompanyName" placeholder="公司名稱">
-    <button onclick="addCompany()">新增公司</button>
+    <h2>選擇員工</h2>
+    <select id="employeeDropdown">
+        <option value="">請選擇員工</option>
+    </select>
 
-    <h2>訂單列表</h2>
-    <table id="orderTable">
-        <thead>
-            <tr>
-                <th>ID</th>
-            </tr>
-        </thead>
-        <tbody></tbody>
-    </table>
-    <input type="text" id="newOrderID" placeholder="訂單編號">
-    <button onclick="addOrder()">新增訂單</button>
+    <h2>員工訂單</h2>
+    <ul id="orderList"></ul>
 
     <script>
         const SUPABASE_URL = "https://tjbebqsyknnnxwpgpvjf.supabase.co";
         const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRqYmVicXN5a25ubnh3cGdwdmpmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzg2MzM4ODksImV4cCI6MjA1NDIwOTg4OX0.Onw16UMEPfgpSfgjV46Z6tsb1zilVFjLh8sHX2nuwx4";
-        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        async function fetchEmployees() {
-            let { data, error } = await supabase.from("employee").select("*");
-            if (error) {
-                console.error("員工資料載入失敗", error);
-                return;
-            }
-            let tbody = document.querySelector("#employeeTable tbody");
-            tbody.innerHTML = "";
-            data.forEach(emp => {
-                let row = `<tr><td>${emp.id}</td><td>${emp.name}</td></tr>`;
-                tbody.innerHTML += row;
+        // 取得員工列表
+        async function fetchEmployee() {
+            const res = await fetch(`${SUPABASE_URL}/rest/v1/employee`, {
+                headers: { 
+                    "apikey": SUPABASE_KEY,
+                    "Authorization": `Bearer ${SUPABASE_KEY}`
+                }
+            });
+            const employees = await res.json();
+            console.log("員工列表:", employees);
+
+            const dropdown = document.getElementById("employeeDropdown");
+            dropdown.innerHTML = `<option value="">請選擇員工</option>`; // 清空並重新加載
+
+            employees.forEach(emp => {
+                const option = document.createElement("option");
+                option.value = emp.id;
+                option.textContent = emp.name;
+                dropdown.appendChild(option);
+            });
+
+            dropdown.addEventListener("change", () => {
+                // const selectedId = dropdown.value;
+                // if (selectedId) {
+                //     fetchOrders(selectedId);
+                // } else {
+                //     document.getElementById("orderList").innerHTML = "";
+                // }
             });
         }
 
-        async function fetchCompanies() {
-            let { data, error } = await supabase.from("company").select("*");
-            if (error) {
-                console.error("公司資料載入失敗", error);
-                return;
-            }
-            let tbody = document.querySelector("#companyTable tbody");
-            tbody.innerHTML = "";
-            data.forEach(comp => {
-                let row = `<tr><td>${comp.id}</td><td>${comp.name}</td></tr>`;
-                tbody.innerHTML += row;
-            });
-        }
-
-        async function fetchOrders() {
-            let { data, error } = await supabase.from("order").select("*");
-            if (error) {
-                console.error("訂單資料載入失敗", error);
-                return;
-            }
-            let tbody = document.querySelector("#orderTable tbody");
-            tbody.innerHTML = "";
-            data.forEach(order => {
-                let row = `<tr><td>${order.id}</td></tr>`;
-                tbody.innerHTML += row;
-            });
-        }
-
+        // 新增員工
         async function addEmployee() {
-            let name = document.getElementById("newEmployeeName").value;
+            const name = document.getElementById("newEmployeeName").value;
             if (!name) return alert("請輸入員工姓名");
 
-            let { error } = await supabase.from("employee").insert([{ name }]);
-            if (error) {
-                alert("新增員工失敗：" + error.message);
+            const res = await fetch(`${SUPABASE_URL}/rest/v1/employees`, {
+                method: "POST",
+                headers: {
+                    "apikey": SUPABASE_KEY,
+                    "Authorization": `Bearer ${SUPABASE_KEY}`,
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ name })
+            });
+
+            if (res.ok) {
+                alert("員工新增成功");
+                fetchEmployee();
             } else {
-                document.getElementById("newEmployeeName").value = "";
-                fetchEmployees();
+                alert("新增失敗");
             }
         }
 
-        async function addCompany() {
-            let name = document.getElementById("newCompanyName").value;
-            if (!name) return alert("請輸入公司名稱");
-
-            let { error } = await supabase.from("company").insert([{ name }]);
-            if (error) {
-                alert("新增公司失敗：" + error.message);
-            } else {
-                document.getElementById("newCompanyName").value = "";
-                fetchCompanies();
-            }
-        }
-
-        async function addOrder() {
-            let orderID = document.getElementById("newOrderID").value;
-            if (!orderID) return alert("請輸入訂單編號");
-
-            let { error } = await supabase.from("order").insert([{ id: orderID }]);
-            if (error) {
-                alert("新增訂單失敗：" + error.message);
-            } else {
-                document.getElementById("newOrderID").value = "";
-                fetchOrders();
-            }
-        }
-
-        // 等待页面加载完成再调用数据
-        document.addEventListener("DOMContentLoaded", () => {
-            fetchEmployees();
-            fetchCompanies();
-            fetchOrders();
-        });
+        // 初始化載入
+        fetchEmployees();
     </script>
 </body>
 </html>
