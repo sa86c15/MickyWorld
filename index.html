@@ -142,10 +142,12 @@
             }
         }
 
-        // 頁面載入時自動載入資料
-        fetchEmployees();
-        fetchCompanies();
-        fetchOrders();
+        // 等待页面加载完成再调用数据
+        document.addEventListener("DOMContentLoaded", () => {
+            fetchEmployees();
+            fetchCompanies();
+            fetchOrders();
+        });
     </script>
 </body>
 </html>
