@@ -5,26 +5,27 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>員工訂單系統</title>
     <style>
-        /* 設定表格樣式，每格最多顯示三個字的寬度，每行顯示4格 */
+        /* 設定表格樣式，讓每行顯示4格，且每格寬度均勻 */
         table {
             width: 100%;
             border-collapse: collapse;
+            table-layout: fixed; /* 固定表格寬度，讓每格寬度均勻 */
         }
         th, td {
             border: 1px solid black;
             text-align: center;
-            width: 20%; /* 每行顯示4格，設置每格寬度為20% */
-            max-width: 3em; /* 限制每格寬度最多3個字 */
+            padding: 10px;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
         }
+        /* 設定每行最多顯示4格 */
         tr {
-            display: flex;
-            justify-content: space-between;
+            display: block;
+            width: 100%;
         }
         td {
-            flex: 1;
+            width: 25%; /* 每格寬度為總寬度的25%，使每行顯示4格 */
         }
     </style>
 </head>
