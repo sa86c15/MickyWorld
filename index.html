@@ -5,11 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>員工訂單系統</title>
     <style>
-        /* 設定表格樣式，讓每行顯示4格，且每格寬度均勻 */
+        /* 設定表格樣式 */
         table {
             width: 100%;
             border-collapse: collapse;
-            table-layout: fixed; /* 固定表格寬度，讓每格寬度均勻 */
+            table-layout: fixed; /* 固定寬度讓欄位均分 */
         }
         th, td {
             border: 1px solid black;
@@ -18,14 +18,14 @@
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
+            width: 20%; /* 5格均分 */
         }
-        /* 設定每行最多顯示4格 */
-        tr {
-            display: block;
-            width: 100%;
-        }
-        td {
-            width: 25%; /* 每格寬度為總寬度的25%，使每行顯示4格 */
+        /* 員工名稱標題間距 */
+        th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+            padding-left: 16px;
+            padding-right: 16px;
         }
     </style>
 </head>
@@ -43,7 +43,9 @@
     <h2>員工列表</h2>
     <table id="employeeTable">
         <thead>
-            <th colspan="4">員工名稱</th>
+            <tr>
+                <th colspan="5">員工名稱</th> <!-- 讓標題橫跨 5 格 -->
+            </tr>
         </thead>
         <tbody>
             <!-- 員工資料會在這裡呈現 -->
@@ -89,14 +91,19 @@
                 cell.textContent = emp.name;
                 row.appendChild(cell);
 
-                // 每4格為一行
-                if ((index + 1) % 4 === 0) {
+                // 每 5 格為一行
+                if ((index + 1) % 5 === 0) {
                     tableBody.appendChild(row);
                     row = document.createElement("tr");
                 }
             });
 
-            // 若最後一行不足4格，將其加入
+            // 若最後一行不足 5 格，補上空白格
+            while (row.children.length < 5) {
+                const emptyCell = document.createElement("td");
+                emptyCell.textContent = "";
+                row.appendChild(emptyCell);
+            }
             if (row.children.length > 0) {
                 tableBody.appendChild(row);
             }
