@@ -67,8 +67,8 @@
                     "Authorization": `Bearer ${SUPABASE_KEY}`
                 }
             });
-            const employees = await res.json();
-            console.log("員工列表:", employees);
+            const employee = await res.json();
+            console.log("員工列表:", employee);
 
             const dropdown = document.getElementById("employeeDropdown");
             dropdown.innerHTML = `<option value="">請選擇員工</option>`; // 清空並重新加載
@@ -79,7 +79,7 @@
 
             let row = document.createElement("tr");
 
-            employees.forEach((emp, index) => {
+            employee.forEach((emp, index) => {
                 // 更新下拉選單
                 const option = document.createElement("option");
                 option.value = emp.id;
@@ -114,7 +114,7 @@
             const name = document.getElementById("newEmployeeName").value;
             if (!name) return alert("請輸入員工姓名");
 
-            const res = await fetch(`${SUPABASE_URL}/rest/v1/employees`, {
+            const res = await fetch(`${SUPABASE_URL}/rest/v1/employee`, {
                 method: "POST",
                 headers: {
                     "apikey": SUPABASE_KEY,
