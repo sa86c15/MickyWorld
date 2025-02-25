@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>員工訂單系統</title>
     <style>
-        /* 設定表格樣式，每格最多顯示三個字的寬度 */
+        /* 設定表格樣式，每格最多顯示三個字的寬度，每行顯示4格 */
         table {
             width: 100%;
             border-collapse: collapse;
@@ -13,11 +13,18 @@
         th, td {
             border: 1px solid black;
             text-align: center;
-            width: 5%;
+            width: 20%; /* 每行顯示4格，設置每格寬度為20% */
             max-width: 3em; /* 限制每格寬度最多3個字 */
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
+        }
+        tr {
+            display: flex;
+            justify-content: space-between;
+        }
+        td {
+            flex: 1;
         }
     </style>
 </head>
@@ -36,6 +43,9 @@
     <table id="employeeTable">
         <thead>
             <tr>
+                <th>員工名稱</th>
+                <th>員工名稱</th>
+                <th>員工名稱</th>
                 <th>員工名稱</th>
             </tr>
         </thead>
@@ -69,7 +79,9 @@
             const tableBody = document.querySelector("#employeeTable tbody");
             tableBody.innerHTML = '';
 
-            employees.forEach(emp => {
+            let row = document.createElement("tr");
+
+            employees.forEach((emp, index) => {
                 // 更新下拉選單
                 const option = document.createElement("option");
                 option.value = emp.id;
@@ -77,12 +89,21 @@
                 dropdown.appendChild(option);
 
                 // 在表格中新增員工資料
-                const row = document.createElement("tr");
                 const cell = document.createElement("td");
                 cell.textContent = emp.name;
                 row.appendChild(cell);
-                tableBody.appendChild(row);
+
+                // 每4格為一行
+                if ((index + 1) % 4 === 0) {
+                    tableBody.appendChild(row);
+                    row = document.createElement("tr");
+                }
             });
+
+            // 若最後一行不足4格，將其加入
+            if (row.children.length > 0) {
+                tableBody.appendChild(row);
+            }
         }
 
         // 新增員工
